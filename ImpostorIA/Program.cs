@@ -12,11 +12,12 @@ namespace ImpostorIA
         
         
         private static Client client;   //declarou o cliente 
-        public static void Main(string[] args)       //é necessario esse tipo de função para utilizar o await
+        public static async Task Main(string[] args)       //é necessario esse tipo de função para utilizar o await
         {
-            Env.Load(); //carregando o env dentro da aplicação
-            var apiKey = Environment.GetEnvironmentVariable("API_KEY"); //pegando a chave da api dentro do .env 
+            var root = Directory.GetParent(AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName; //forçando para emtrar na pasta do env  
             
+            Env.Load(Path.Combine(root, ".env")); //carregando o env dentro da aplicação
+            var apiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY"); //pegando a chave da api dentro do .env 
             client = new Client(apiKey:  apiKey); //instanciando o client 
             
             //uma forma de colocar a apikey
@@ -30,6 +31,7 @@ namespace ImpostorIA
             List<string> jogadores = new List<string>();
 
             while (jogo){
+                Console.Clear();
                 Console.WriteLine("JOGO DO IMPOSTOR");
                 Console.WriteLine();
                 Console.WriteLine("1- Começar uma rodada");
@@ -39,19 +41,20 @@ namespace ImpostorIA
 
                 do
                 {
-                    escolha = Console.ReadKey().KeyChar; //leitura do botao 
+                    escolha = Console.ReadKey(true).KeyChar; //leitura do botao 
                 } while (escolha != '1' && escolha != '2' && escolha != '3');
 
                 switch (escolha)
                 {
                     case '1':
-                        Rodada(jogadores);
+                        await Rodada(jogadores);
                         break;
                     case '2':
                         jogadores = GerenciarJogador();
                         break;
                     case '3':
                         Console.WriteLine("Obrigado por jogar!");
+                        jogo = false;
                         break;
                 }
             }
@@ -65,6 +68,7 @@ namespace ImpostorIA
             bool termino = false;
             while (termino==false)
             {
+                Console.Clear();
                 if (jogadores.Count == 0)
                 {
                     Console.WriteLine("Não há nenhum jogador registrado!");
@@ -73,7 +77,7 @@ namespace ImpostorIA
                     char esc; 
                     do
                     {
-                        esc = Console.ReadKey().KeyChar;
+                        esc = Console.ReadKey(true).KeyChar;
                     }while(esc != '1' && esc != '2');
 
                     if (esc == '1')
@@ -100,7 +104,7 @@ namespace ImpostorIA
 
                     do
                     {
-                        escolha = Console.ReadKey().KeyChar;
+                        escolha = Console.ReadKey(true).KeyChar; //o true faz q nada apreça ao clicar a tecla 
                     } while (escolha!='1' && escolha != '2' && escolha != '3');
 
                     switch (escolha)
@@ -113,6 +117,7 @@ namespace ImpostorIA
                             break;
                         case '3':
                             Console.WriteLine("Saindo do gerencimanto...");
+                            termino = true;
                             Pausar();
                             break;
                     }
@@ -137,6 +142,7 @@ namespace ImpostorIA
             string nome = Console.ReadLine();
             jogadores.Add(nome);
             Console.WriteLine("Jogador adicionado com sucesso!");
+            Pausar();
         }
 
         static void ApagarJogador(List<string> jogadores)
@@ -167,9 +173,9 @@ namespace ImpostorIA
 
         static void Pausar()
         {
-            Console.ReadKey(true); //esperando o usuario clicar no console
             Console.WriteLine("Digite qualquer tecla para continuar...");
             Console.WriteLine();
+            Console.ReadKey(true); //esperando o usuario clicar no console
         }
 
         static void Listar(List<string> jogadores)
@@ -180,7 +186,7 @@ namespace ImpostorIA
             }
         }
 
-        static void Rodada(List<string> jogadores)
+        static async Task Rodada(List<string> jogadores)
         {
             Console.Clear();
             if (jogadores.Count < 3)
@@ -192,7 +198,9 @@ namespace ImpostorIA
             Console.WriteLine("IMPOSTOR IA - INICIO DE RODADA");
             Console.WriteLine("Qual será o TEMA dessa jogada?");
             string tema = Console.ReadLine();
-            var palavraSorteada = EscolhendoTema(tema); //var é a variavel que se adapta 
+            var palavraSorteada = await EscolhendoTema(tema); //var é a variavel que se adapta 
+            //tudo que envolve a IA e sua resposta, tem q usar o await para esperar a resposta dele 
+            //await é uma corrente se um metodo la dentro usa , o método mais de fora tbm vai usar 
             string impostor = SorteioImpostor(jogadores);
             Console.WriteLine("Palavra e impostor foram sorteados!");
             Pausar();
@@ -210,9 +218,11 @@ namespace ImpostorIA
                 {
                     Console.WriteLine($"Palavra sorteada: {palavraSorteada} ");
                 }
-                
                 Pausar();
             }
+            Console.Clear();
+            Console.WriteLine("Aperte qualquer tecla para finalizar a rodada...");
+            Console.ReadKey(true);
             Console.Clear();
             Console.WriteLine($"O impostor da rodada era {impostor}");
             Console.WriteLine($"A palavra sorteada foi {palavraSorteada}");
@@ -222,8 +232,8 @@ namespace ImpostorIA
         static async Task<string> EscolhendoTema(string tema) //oq é esperado retornar dessa função
         {
             var respostaIA = await client.Models.GenerateContentAsync(
-                model: "gemini-1.5-flash", //modelo da IA
-                contents: $"Você é um gerador de palavras de um jogo. O tema é {tema}. Responda com apenas uma única palavra ou nome famoso/conhecido relacionado ao tema, sem pontuação sem explicação");
+                model: "gemini-2.5-flash-lite", //modelo da IA
+                contents: $"Você é um gerador de palavras de um jogo. O tema é {tema}. Responda com apenas uma palavra ou nome famoso/conhecido relacionado ao tema, sem pontuação e sem explicação");
                 //prompt realizado nele 
             return respostaIA.Text;
             
