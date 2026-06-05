@@ -206,6 +206,8 @@ namespace ImpostorIA
             //tudo que envolve a IA e sua resposta, tem q usar o await para esperar a resposta dele 
             //await é uma corrente se um metodo la dentro usa , o método mais de fora tbm vai usar
 
+            var dicaImpostor = await DicaImpostor(tema, palavraSorteada);
+
 
             string impostor = SorteioImpostor(jogadores);
             Console.WriteLine("Palavra e impostor foram sorteados!");
@@ -218,6 +220,9 @@ namespace ImpostorIA
                 if (jogador == impostor)
                 {
                     Console.WriteLine("VOCÊ É O IMPOSTOR!");
+                    Console.WriteLine();
+                    Console.WriteLine($"Dica: {dicaImpostor}");
+                    Console.WriteLine();
                     Console.WriteLine("Boa sorte!");
                 }
                 else
@@ -251,7 +256,11 @@ namespace ImpostorIA
             {
                 respostaIA = await client.Models.GenerateContentAsync(
                 model: "gemini-2.5-flash-lite", //modelo da IA
-                contents: $"Você é um gerador de palavras de um jogo. O tema é {tema}. Responda com apenas uma palavra ou nome famoso/conhecido relacionado ao tema, sem pontuação e sem explicação, mas não seja tão obvio");
+                contents: $"Você é um gerador de palavras de um jogo. O tema é '{tema}'. " +
+              $"Escolha UMA palavra ou nome específico e bem conhecido dentro desse tema. " +
+              $"Se o tema for muito amplo, afunile para uma subcategoria antes de escolher. " +
+              $"A palavra deve ser reconhecida por quem conhece o tema, mas não ser a mais óbvia. " +
+              $"Responda apenas com a palavra ou nome, sem pontuação e sem explicação.");
 
                 string busca = palavraJa.Find(x=> x == respostaIA.Text); //verificando se a palavra já foi usada
 
@@ -270,6 +279,28 @@ namespace ImpostorIA
             
             Console.WriteLine("OK");
             return respostaIA.Text!;
+        }
+
+        
+        static async Task<string> DicaImpostor(string tema, string palavraEscolhida)
+        {
+            GenerateContentResponse? respostaIA = null;
+
+            respostaIA = await client.Models.GenerateContentAsync(
+               model: "gemini-2.5-flash-lite", //modelo da IA
+               contents: $"Você é um assistente de um jogo chamado Impostor. " +
+          $"Você é um assistente de um jogo chamado Impostor. " +
+          $"O tema da rodada é '{tema}' e a palavra secreta é '{palavraEscolhida}'. " +
+          $"Responda com EXATAMENTE uma linha seguindo este formato fixo: '[tipo] de [origem]'. " +
+          $"Onde '[tipo]' é o que a palavra é (personagem, técnica, lugar, objeto, veículo...) " +
+          $"e '[origem]' é o nome do universo, franquia, série ou contexto de onde ela vem. " +
+          $"PROIBIDO: usar frases, adjetivos, referências culturais, memes ou qualquer coisa fora do formato. " +
+          $"Exemplo para tema 'Dragon Ball', palavra 'Kamehameha': técnica de Dragon Ball " +
+          $"Exemplo para tema 'Filmes de Ação', palavra 'Exterminador do Futuro': personagem de Terminator " +
+          $"Exemplo para tema 'animes', palavra 'Kakashi': personagem de Naruto " +
+          $"Exemplo para tema 'carros', palavra 'Corolla': modelo de Toyota");
+
+            return respostaIA.Text;
         }
 
         static string SorteioImpostor(List<string> jogadores)
