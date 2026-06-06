@@ -1,5 +1,4 @@
 # 🕵️ ImpostorIA
-
 > Jogo do Impostor com inteligência artificial rodando no terminal, desenvolvido em **C#**.
 
 ---
@@ -8,25 +7,24 @@
 
 **ImpostorIA** é uma versão do popular jogo de dedução social **"Jogo do Impostor"**, onde um jogador é secretamente o impostor e não sabe a palavra sorteada.
 
-O diferencial é que a palavra de cada rodada é gerada pela **IA do Google Gemini**, baseada no tema escolhido pelos jogadores.
+O diferencial é que a palavra e a dica de cada rodada são geradas pela **IA do Google Gemini**, baseada no tema escolhido pelos jogadores — garantindo palavras variadas, equilibradas e contextualizadas.
 
 ---
 
 ## 🎮 Como Jogar
 
 ### Objetivo
-Descobrir quem é o impostor! O impostor não sabe a palavra sorteada e precisa se esconder entre os jogadores.
+Descobrir quem é o impostor! O impostor não sabe a palavra sorteada e precisa se esconder entre os jogadores usando apenas uma dica de categoria gerada pela IA.
 
 ### Fluxo de uma Rodada
-
 ```
 1. 👥 Cadastre os jogadores (mínimo 3)
-2. 🎯 Escolha um tema (ex: "animais", "filmes", "esportes")
-3. 🤖 A IA sorteia uma palavra relacionada ao tema
+2. 🎯 Escolha um tema (ex: "Dragon Ball", "Filmes de Ação", "carros")
+3. 🤖 A IA sorteia uma palavra conhecida relacionada ao tema
 4. 🕵️ Um jogador é sorteado secretamente como o Impostor
 5. 📱 Cada jogador vê sua tela individualmente:
       - Jogador normal → vê a palavra sorteada
-      - Impostor → vê "VOCÊ É O IMPOSTOR!"
+      - Impostor       → vê "VOCÊ É O IMPOSTOR!" + uma dica de categoria
 6. 🗣️ Os jogadores debatem e tentam descobrir quem é o impostor
 7. 🏆 Ao final, o impostor e a palavra são revelados
 ```
@@ -35,12 +33,29 @@ Descobrir quem é o impostor! O impostor não sabe a palavra sorteada e precisa 
 
 ## 🤖 Integração com IA
 
-A palavra de cada rodada é gerada pelo **Google Gemini**, garantindo que seja sempre diferente e relacionada ao tema escolhido.
+A palavra e a dica de cada rodada são geradas pelo **Google Gemini**, com prompts calibrados para equilibrar o jogo.
 
-Exemplo:
-- Tema: `"Futebol"` → IA pode gerar: `Pelé`
-- Tema: `"Animais"` → IA pode gerar: `Ornitorrinco`
-- Tema: `"Filmes"` → IA pode gerar: `Inception`
+### Geração de Palavra
+A IA escolhe uma palavra reconhecida no contexto do tema, mas que não seja a mais óbvia. Se o tema for muito amplo, ela afunila para uma subcategoria automaticamente.
+
+| Tema | Palavra gerada (exemplo) |
+|------|--------------------------|
+| `Dragon Ball` | `Vegeta` |
+| `Filmes de Ação` | `John Wick` |
+| `carros` | `Corolla` |
+| `animes` | `Kakashi` |
+
+### Dica para o Impostor
+O impostor recebe uma dica no formato **`[tipo] de [origem]`**, vaga o suficiente para não revelar a palavra, mas útil para ele se passar por alguém que conhece o tema.
+
+| Tema | Palavra | Dica recebida pelo impostor |
+|------|---------|-----------------------------|
+| `Dragon Ball` | `Kamehameha` | `técnica de Dragon Ball` |
+| `Filmes de Ação` | `Exterminador do Futuro` | `personagem de Terminator` |
+| `animes` | `Kakashi` | `personagem de Naruto` |
+| `carros` | `Corolla` | `modelo de Toyota` |
+
+> A dica **não descreve** o que a palavra é ou faz — apenas indica sua categoria e origem, exigindo que o impostor raciocine para se passar por quem conhece a palavra.
 
 ---
 
@@ -50,7 +65,7 @@ Exemplo:
 |------------|-----|
 | **C#** | Linguagem principal do projeto |
 | **.NET** | Plataforma de execução |
-| **Google Gemini API** | Geração de palavras via IA |
+| **Google Gemini API** | Geração de palavras e dicas via IA |
 | **Git & GitHub** | Controle de versão |
 
 ### Dependências (NuGet)
@@ -115,9 +130,11 @@ ImpostorIA/
 
 - **Programação Assíncrona** — Uso de `async/await` para aguardar a resposta da IA sem travar o programa
 - **Integração com API** — Consumo da API do Google Gemini via SDK oficial
+- **Engenharia de Prompt** — Prompts calibrados com formato fixo, exemplos concretos e restrições explícitas para controlar o comportamento da IA
 - **Variáveis de Ambiente** — API Key protegida com `.env` e `DotNetEnv`
 - **Modularização** — Código dividido em métodos específicos (`Rodada`, `GerenciarJogador`, `SorteioImpostor`, etc.)
 - **Validação de Entrada** — Loops de proteção contra entradas inválidas
+- **Normalização de Strings** — `.Trim()` e `.ToLower()` na comparação de palavras para evitar duplicatas por espaços ou capitalização diferente
 
 ---
 
